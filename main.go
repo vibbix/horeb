@@ -8,16 +8,6 @@ import (
 	"time"
 )
 
-func printBlocks(all bool) {
-	for name, block := range Blocks {
-		fmt.Printf("%s: %U, %U\n", name, block.start, block.end)
-		if all {
-			block.Print()
-			fmt.Println()
-		}
-	}
-}
-
 var blockFlag UnicodeBlock
 
 func init() {
@@ -33,13 +23,21 @@ func main() {
 	block := flag.String("b", "geometric", "unicode block by name")
 	flag.Parse()
 
+	output := make(chan rune)
+
 	if *dumpBlocks {
-		printBlocks(true)
+		for name, block := range Blocks {
+			fmt.Printf("%s: %U, %U\n", name, block.start, block.end)
+			block.GenRunes(output)
+		}
+		for r := range output {
+			fmt.Printf("%c ", r)
+		}
 		os.Exit(0)
 	}
 
 	if *listBlocks {
-		printBlocks(false)
+		dumpAll(output)
 		os.Exit(0)
 	}
 
@@ -47,7 +45,7 @@ func main() {
 	if blockFlag.end > 0 {
 		b.start = blockFlag.start
 		b.end = blockFlag.end
-		b.PrintRandom(*nchars)
+		//b.PrintRandom(*nchars)
 		os.Exit(0)
 	}
 
@@ -56,5 +54,5 @@ func main() {
 	if !valid {
 		b = Blocks["geometric"]
 	}
-	b.PrintRandom(*nchars)
+	b.GenRandomRunes(output, *nchars)
 }

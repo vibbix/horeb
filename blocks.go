@@ -11,25 +11,31 @@ type UnicodeBlock struct {
 	start, end rune
 }
 
+func dumpAll(dst chan<- rune) {
+	for name, block := range Blocks {
+		fmt.Printf("%s: %U, %U\n", name, block.start, block.end)
+		block.GenRunes(dst)
+	}
+}
+
 func (b *UnicodeBlock) RandomCodePoint() rune {
 	return rune(rand.Intn(int(b.end-b.start)) + int(b.start) + 1)
 }
 
-func (b *UnicodeBlock) Print() {
+// Generates all runes in the block sequentially.
+func (b *UnicodeBlock) GenRunes(dst chan<- rune) {
 	for i := b.start; i <= b.end; i++ {
 		if strconv.IsPrint(i) {
-			fmt.Printf("%c ", i)
+			dst <- i
 		}
 	}
-	fmt.Println()
 }
 
-// Print num random characters from block.
-func (b *UnicodeBlock) PrintRandom(num int) {
+// Generate num random characters from block.
+func (b *UnicodeBlock) GenRandomRunes(dst chan<- rune, num int) {
 	for i := 0; i < num; i++ {
-		fmt.Printf("%c ", b.RandomCodePoint())
+		dst <- b.RandomCodePoint()
 	}
-	fmt.Println()
 }
 
 // implementing the flag.Value interface
