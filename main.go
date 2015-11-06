@@ -24,7 +24,7 @@ func main() {
 
 	switch {
 	case *list:
-		printBlocks(false)
+		printBlocks(Blocks, false)
 	case *dump:
 		if len(blocks) != 0 {
 			for _, s := range blocks {
@@ -32,7 +32,7 @@ func main() {
 				b.Print()
 			}
 		} else {
-			printBlocks(true)
+			printBlocks(Blocks, true)
 		}
 	case len(blocks) == 1:
 		Blocks[blocks[0]].PrintRandom(*nchars)

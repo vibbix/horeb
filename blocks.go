@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sort"
 	"strconv"
 )
 
@@ -10,9 +11,12 @@ type UnicodeBlock struct {
 	start, end rune
 }
 
+type BlockMap map[string]*UnicodeBlock
+
 // For info about fonts supporting specific unicode blocks, see for example:
 // http://www.fileformat.info/info/unicode/block/index.htm
-var Blocks = map[string]*UnicodeBlock{
+var Blocks = &BlockMap{
+
 	// Basic Multilingual Plane (0000-ffff)
 	// https://en.wikipedia.org/wiki/Plane_(Unicode)#Basic_Multilingual_Plane
 	"hebrew":         &UnicodeBlock{0x0590, 0x05ff},
@@ -22,6 +26,7 @@ var Blocks = map[string]*UnicodeBlock{
 	"geometric":      &UnicodeBlock{0x25a0, 0x25ff},
 	"misc_symbols":   &UnicodeBlock{0x2600, 0x26ff},
 	"dingbats":       &UnicodeBlock{0x2700, 0x27bf},
+
 	// Supplementary Multilingual Plane (10000-1ffff)
 	// https://en.wikipedia.org/wiki/Plane_(Unicode)#Supplementary_Multilingual_Plane
 	"aegean_nums":        &UnicodeBlock{0x10100, 0x1013f},
@@ -34,24 +39,48 @@ var Blocks = map[string]*UnicodeBlock{
 	"playing_cards":      &UnicodeBlock{0x1f0a0, 0x1f0ff},
 }
 
-// Returns a *UnicodeBlock at random from a string:*UnicodeBlock map provided as argument.
-func RandomBlock(m map[string]*UnicodeBlock) *UnicodeBlock {
-	var keys []string
-	for k := range m {
-		keys = append(keys, k)
+// Returns a *UnicodeBlock at random.
+func (bm *BlockMap) RandomBlock() *UnicodeBlock {
+	for k, _ := range bm {
+		return bm[k]
 	}
-	randKey := keys[rand.Intn(len(keys))]
-	return m[randKey]
+	return nil
 }
 
-func printBlocks(all bool) {
-	for name, block := range Blocks {
-		fmt.Printf("%5x %5x  %s\n", block.start, block.end, name)
-		if all {
-			block.Print()
-			fmt.Println()
-		}
+// START implement sort.Interface --------------------------------
+func (s ByUnicodeBlock) Len() int {
+	return len(s)
+}
+
+func (s ByUnicodeBlock) Swap(i, j int) {
+	s[i], s[j] = s[j], s[i]
+}
+
+func (s ByUnicodeBlock) Less(i, j int) bool {
+	return int(s[i].start) < int(s[j].start)
+}
+
+// END implement sort.Interface ----------------------------
+
+// List blockmap contents.
+func (bm *BlockMap) List() {
+	var blocks []*UnicodeBlock
+	for _, b := range bm {
+		blocks = append(blocks, b)
 	}
+	sort.Sort(ByUnicodeBlock(blocks))
+	for _, b := range blocks {
+		fmt.Printf("%5x %5x\n", b.start, b.end)
+	}
+
+	//for _, n := range names {
+	//	block := Blocks[n]
+	//	fmt.Printf("%5x %5x  %s\n", block.start, block.end, n)
+	//	if all {
+	//		block.Print()
+	//		fmt.Println()
+	//	}
+	//}
 }
 
 // Returns a single rune at random from UnicodeBlock.
