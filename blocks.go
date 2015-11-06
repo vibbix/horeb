@@ -47,7 +47,7 @@ func (bm *BlockMap) RandomBlock() *UnicodeBlock {
 	return nil
 }
 
-// START implement sort.Interface --------------------------------
+// START implement sort.Interface
 func (s ByUnicodeBlock) Len() int {
 	return len(s)
 }
@@ -60,7 +60,7 @@ func (s ByUnicodeBlock) Less(i, j int) bool {
 	return int(s[i].start) < int(s[j].start)
 }
 
-// END implement sort.Interface ----------------------------
+// END implement sort.Interface
 
 // List blockmap contents.
 func (bm *BlockMap) List() {
